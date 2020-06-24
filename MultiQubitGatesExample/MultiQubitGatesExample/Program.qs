@@ -7,7 +7,7 @@
     
 
     @EntryPoint()
-    operation HelloQ() : Unit {
+    operation Start() : Unit {
         
         Message("CNOT");
         ControlledNotSample(false, false); // |00> 
