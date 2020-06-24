@@ -12,7 +12,6 @@
 
         using (qubit = Qubit()) {
             for (idx in 0..count) {
-
                 H(qubit);                
                 let result = MResetZ(qubit);
                 set resultsTotal += result == One ? 1 | 0;
