@@ -8,7 +8,15 @@
 
     @EntryPoint()
     operation Start() : Unit {
-        
+
+        Message("Bell state");
+        BellState(false, false); // |00> 
+        BellState(false, true); // |01> 
+        BellState(true, false); // |10> 
+        BellState(true, true); // |11> 
+
+        Message("***********");
+
         Message("CNOT");
         ControlledNotSample(false, false); // |00> 
         ControlledNotSample(false, true); // |01> 
@@ -116,11 +124,35 @@
         }
     }
 
+    operation BellState(controlInitialState : Bool, targetInitialState : Bool) : Unit {
+        mutable matchingMeasurement = 0;
+        for (run in 0..4) {
+            using ((control, target) = (Qubit(), Qubit())) {
+                    PrepareQubitState(control, controlInitialState);
+                    PrepareQubitState(target, targetInitialState);
+
+                    H(control);
+                    CNOT(control, target);
+                    let resultControl = MResetZ(control);
+                    let resultTarget = MResetZ(target);
+
+                    if (resultControl == resultTarget) 
+                    {
+                        set matchingMeasurement += 1;
+                    }
+
+                    Message("|" + (controlInitialState ? "1" | "0") + (targetInitialState ? "1" | "0") +"> ==> |" + (resultControl == One ? "1" | "0") + (resultTarget == One ? "1" | "0") +">");
+            }
+        }
+        
+        Message("Measurements of two qubits matched: " + IntAsString(matchingMeasurement));
+    }
+
     operation PrepareQubitState(qubit : Qubit, initialState : Bool) : Unit is Adj
     {
         if (initialState) {
             X(qubit);
-        }
+        }       
     }
 }
 
