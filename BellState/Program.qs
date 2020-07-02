@@ -1,9 +1,10 @@
-﻿namespace BellState {
+﻿namespace BellStateExample {
 
     open Microsoft.Quantum.Canon;
     open Microsoft.Quantum.Intrinsic;
     open Microsoft.Quantum.Measurement;
     open Microsoft.Quantum.Convert;
+    open Microsoft.Quantum.Preparation;
     
 
     @EntryPoint()
@@ -44,8 +45,11 @@
                     PrepareQubitState(control, controlInitialState);
                     PrepareQubitState(target, targetInitialState);
 
-                    H(control);
-                    CNOT(control, target);
+                    // these are interchangeable
+                    PrepareEntangledState([control], [target]);
+                    // H(control);
+                    // CNOT(control, target);
+                    
                     let resultControl = Measure([controlMeasurementBasis], [control]);
                     let resultTarget = Measure([targetMeasureMeasurementBasis], [target]);
                     ResetAll([control, target]);
