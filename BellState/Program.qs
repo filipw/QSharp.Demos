@@ -10,23 +10,23 @@
     @EntryPoint()
     operation Start() : Unit {
 
-        Message("Measuring control in PauliZ and target in PauliZ");
-        BellState(false, false, PauliZ, PauliZ); // |00> 
+        Message("Measuring control qubit in PauliZ and target qubit in PauliZ");
+        BellState(false, false, PauliZ, PauliZ); // |00>
         BellState(false, true, PauliZ, PauliZ); // |01> 
         BellState(true, false, PauliZ, PauliZ); // |10> 
         BellState(true, true, PauliZ, PauliZ); // |11> 
 
         Message("");
         Message("***********");
-        Message("Measuring control in PauliX and target in PauliZ");
-        BellState(false, false, PauliX, PauliZ); // |00> 
-        BellState(false, true, PauliX, PauliZ); // |01> 
-        BellState(true, false, PauliX, PauliZ); // |10> 
-        BellState(true, true, PauliX, PauliZ); // |11> 
+        Message("Measuring control qubit in PauliZ and target qubit in PauliX");
+        BellState(false, false, PauliZ, PauliX); // |00> 
+        BellState(false, true, PauliZ, PauliX); // |01> 
+        BellState(true, false, PauliZ, PauliX); // |10> 
+        BellState(true, true, PauliZ, PauliX); // |11> 
 
         Message("");
         Message("***********");
-        Message("Measuring control in PauliX and target in PauliX");
+        Message("Measuring control qubit in PauliX and target qubit in PauliX");
         BellState(false, false, PauliX, PauliX); // |00> 
         BellState(false, true, PauliX, PauliX); // |01> 
         BellState(true, false, PauliX, PauliX); // |10> 
