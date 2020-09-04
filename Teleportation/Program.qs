@@ -9,11 +9,15 @@
 
     @EntryPoint()
     operation Start() : Unit {
-            for (idx in 0..10) {
+            for (idx in 0..3) {
+                Message("Teleporting |->");
                 Teleport(false); // send |->
             }
 
-            for (idx in 0..10) {
+            Message("***********");
+
+            for (idx in 0..3) {
+                Message("Teleporting |+>");
                 Teleport(true); // send |+>
             }
     }
