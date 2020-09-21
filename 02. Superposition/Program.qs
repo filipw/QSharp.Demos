@@ -1,4 +1,4 @@
-﻿namespace QubitExample {
+﻿namespace SuperposttionExample {
 
     open Microsoft.Quantum.Bitwise;
     open Microsoft.Quantum.Canon;

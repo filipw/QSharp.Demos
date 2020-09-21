@@ -4,7 +4,6 @@
     open Microsoft.Quantum.Intrinsic;
     open Microsoft.Quantum.Measurement;
     open Microsoft.Quantum.Convert;
-    
 
     @EntryPoint()
     operation Start() : Unit {
