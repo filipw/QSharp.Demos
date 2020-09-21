@@ -4,9 +4,20 @@
     open Microsoft.Quantum.Canon;
     open Microsoft.Quantum.Intrinsic;
     open Microsoft.Quantum.Measurement;
+    open Microsoft.Quantum.Convert;
     
+    @EntryPoint()
+    operation Start() : Unit {
 
-    operation MeasureQubits(count : Int) : Int {
+        MeasureQubits(1000);
+        Message("***********");
+
+        let randomBits = RandomNumberGenerator();
+        Message("Generated random uint32: " + IntAsString(BoolArrayAsInt(randomBits)));
+    }
+
+
+    operation MeasureQubits(count : Int) : Unit {
 
         mutable resultsTotal = 0;
 
@@ -16,9 +27,10 @@
                 let result = MResetZ(qubit);
                 set resultsTotal += result == One ? 1 | 0;
             }
-
-            return resultsTotal;
         }
+
+        Message($"Received " + IntAsString(resultsTotal) + " ones.");
+        Message($"Received " + IntAsString(count - resultsTotal) + " zeros.");
     }
 
     operation RandomNumberGenerator() : Bool[] {
@@ -32,6 +44,7 @@
                 set randomBits w/= idx <- result == One;
             }
         }
+        
         return randomBits;
     }   
 }
