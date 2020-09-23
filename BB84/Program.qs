@@ -13,55 +13,83 @@
     @EntryPoint()
     operation Start() : Unit {
 
-        mutable aliceValues = new Bool[16];
-        mutable aliceBases = new Bool[16];
-        mutable bobResults = new Bool[16];
-        mutable bobBases = new Bool[16];
+        let expectedKeyLength = 256;
+        let chunk = 16;
 
-        using (qubits = Qubit[16]) {
-            
-            // prepare Alice's qubits
-            for (i in 0..15) {
-                let valueSelected = DrawRandomBool(0.5);
-                if (valueSelected) { X(qubits[i]); }
-                set aliceValues w/= i <- valueSelected;
+        mutable aliceValues = new Bool[0];
+        mutable aliceBases = new Bool[0];
+        mutable bobResults = new Bool[0];
+        mutable bobBases = new Bool[0];
 
-                // 0 will represent |0> and |1>  computational basis
-                // 1 will represent |-> and |+>  computational basis
-                let aliceBaseSelected = DrawRandomBool(0.5);
-                if (aliceBaseSelected) { H(qubits[i]); }
-                set aliceBases w/= i <- aliceBaseSelected;
+        mutable aliceKey = new Bool[0];
+        mutable bobKey = new Bool[0];
+        mutable offset = 0;
+
+        repeat {
+            Message("***********");
+            Message($"Iteration {(offset/chunk) + 1}");
+            using (qubits = Qubit[chunk]) {
+                
+                // prepare Alice's qubits
+                for (i in 0..chunk-1) {
+
+                    // Alice chooses random bit
+                    let valueSelected = DrawRandomBool(0.5);
+                    if (valueSelected) { X(qubits[i]); }
+                    set aliceValues += [valueSelected];
+
+                    // Alice chooses random basis by drawing a random bit
+                    // 0 will represent |0> and |1> computational (PauliZ) basis
+                    // 1 will represent |-> and |+> Hadamard (PauliX) basis
+                    let aliceBasisSelected = DrawRandomBool(0.5);
+                    if (aliceBasisSelected) { H(qubits[i]); }
+                    set aliceBases += [aliceBasisSelected];
+                }
+
+                // measure Bob's qubits
+                for (i in 0..chunk-1) {
+
+                    // Bob chooses random basis by drawing a random bit
+                    // 0 will represent PauliZ basis
+                    // 1 will represent PauliX basis
+                    let bobBasisSelected = DrawRandomBool(0.5);
+                    set bobBases += [bobBasisSelected];
+                    let bobResult = Measure([bobBasisSelected ? PauliX | PauliZ], [qubits[i]]);
+                    set bobResults += [ResultAsBool(bobResult)];
+                    Reset(qubits[i]);
+                }   
             }
 
-            // measure Bob's qubits
-            for (i in 0..15) {
-                let bobBaseSelected = DrawRandomBool(0.5);
-                set bobBases w/= i <- bobBaseSelected;
-                let bobBase = bobBaseSelected ? PauliX | PauliZ;
-                let bobResult = Measure([bobBase], [qubits[i]]);
-                set bobResults w/= i <- ResultAsBool(bobResult);
-                Reset(qubits[i]);
-            }   
+            Message("Alice's sent values:   " + BoolArrayToString(aliceValues[offset..offset+chunk-1]));
+            Message("Bob's measured values: " + BoolArrayToString(bobResults[offset..offset+chunk-1]));
 
-            Message("Alice's original values: " + BoolArrayToString(aliceValues));
-            Message("Bob's measured values:   " + BoolArrayToString(bobResults));
-
-            mutable aliceKey = new Bool[0];
-            mutable bobKey = new Bool[0];
             // compare bases and pick shared key results
-            for (i in 0..15) {
-                if (aliceBases[i] == bobBases[i]) {
-                    set aliceKey += [aliceValues[i]];
-                    set bobKey += [bobResults[i]];
+            for (i in 0..chunk-1) {
+                // if Alice and Bob used the same basis
+                // they can use the corresponding bit
+                if (aliceBases[offset+i] == bobBases[offset+i]) {
+                    set aliceKey += [aliceValues[offset+i]];
+                    set bobKey += [bobResults[offset+i]];
                 }
             }
-            
-            Message("Alice's key: " + BoolArrayToString(aliceKey));
-            Message("Bob's key:   " + BoolArrayToString(bobKey));
 
-            let keysEqual = EqualA(EqualB, aliceKey, bobKey);
-            Message("Keys are equal? " + BoolAsString(keysEqual));
-        }
+            set offset += chunk-1;
+            Message("");
+
+        } until (Length(aliceKey) > expectedKeyLength);
+        
+        Message("***********");
+        Message("");
+
+        Message("Alice's key: " + BoolArrayToString(aliceKey) + " | key length: " + IntAsString(Length(aliceKey)));
+        Message("Bob's key:   " + BoolArrayToString(bobKey) + " | key length: " + IntAsString(Length(bobKey)));
+
+        let keysEqual = EqualA(EqualB, aliceKey, bobKey);
+        Message($"Keys are equal? {keysEqual}");
+        Message("");
+
+        let trimmedKey = aliceKey[0..expectedKeyLength-1];
+        Message($"Final trimmed key of length {expectedKeyLength}: {BoolArrayToString(trimmedKey)}");
     }
 
     function BoolArrayToString(array : Bool[]) : String {
