@@ -24,14 +24,20 @@
 
     operation RunBB84Protocol(expectedKeyLength : Int, eavesdropperProbability : Double) : Bool {
         let chunk = 16;
+
+        // we want to transfer (4 + 𝛿)n required bits
+        // n = expectedKeyLength
+        // chunk = amount of qubits to allocate and send in a single roundtrip
+        // 𝛿 = extra bits in case the low sample size causes us to end up with less than required bits
+        // at the end of the protocl execution. In our case we assume 𝛿 = 2 * chunk (32)
+        let roundtrips = (4 * expectedKeyLength + 2 * chunk) / chunk;
+
         mutable aliceValues = new Bool[0];
         mutable aliceBases = new Bool[0];
         mutable bobResults = new Bool[0];
         mutable bobBases = new Bool[0];
-        mutable offset = 0;
 
-        repeat {
-            //Message($"Iteration {(offset/chunk) + 1}");
+        for (roundtrip in 0..roundtrips-1) {
             using (qubits = Qubit[chunk]) {
                 
                 // prepare Alice's qubits
@@ -72,14 +78,7 @@
                     Reset(qubits[i]);
                 }   
             }
-
-            //Message("Alice's sent values:   " + BoolArrayToString(aliceValues[offset..offset+chunk-1]));
-            //Message("Bob's measured values: " + BoolArrayToString(bobResults[offset..offset+chunk-1]));
-
-            set offset += chunk-1;
-            //Message("");
-
-        } until (offset+1 > expectedKeyLength * 4);
+        }
         
         Message("***********");
         Message("");
@@ -163,16 +162,6 @@
 
         for (item in array) {
             set stringResult += item ? "1" | "0";
-        }
-
-        return stringResult;
-    }
-
-    function IntArrayToString(array : Int[]) : String {
-        mutable stringResult = "";
-
-        for (item in array) {
-            set stringResult += IntAsString(item) + " ";
         }
 
         return stringResult;
