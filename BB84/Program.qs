@@ -112,11 +112,11 @@
             }
         }
 
-        // compare results on eavesdropping checck indices
+        // compare results on eavesdropping check indices
         mutable differences = 0;
         for (i in eavesdropppingIndices) {
-            // if Alice and Bob used the same basis
-            // they can use the corresponding bit
+            // if Alice and Bob get different result, but used same basis
+            // it means that there must have been an eavesdropper (assuming perfect communication)
             if (aliceValuesAfterBasisComparison[i] != bobValuesAfterBasisComparison[i]) {
                 set differences += 1;
             }
