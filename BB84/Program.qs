@@ -41,41 +41,39 @@
             using (qubits = Qubit[chunk]) {
                 
                 // prepare Alice's qubits
-                for (i in 0..chunk-1) {
-
+                for (qubit in qubits) {
                     // Alice chooses random bit
                     let valueSelected = DrawRandomBool(0.5);
-                    if (valueSelected) { X(qubits[i]); }
+                    if (valueSelected) { X(qubit); }
                     set aliceValues += [valueSelected];
 
                     // Alice chooses random basis by drawing a random bit
                     // 0 will represent |0> and |1> computational (PauliZ) basis
                     // 1 will represent |-> and |+> Hadamard (PauliX) basis
                     let aliceBasisSelected = DrawRandomBool(0.5);
-                    if (aliceBasisSelected) { H(qubits[i]); }
+                    if (aliceBasisSelected) { H(qubit); }
                     set aliceBases += [aliceBasisSelected];
                 }
 
                 //eavesdropper!!!
-                for (i in 0..chunk-1) {
+                for (qubit in qubits) {
                     let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
                     if (shouldEavesdrop) {
                         let eveBasisSelected = DrawRandomBool(0.5);
-                        let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [qubits[i]]);
+                        let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [qubit]);
                     }
                 }
 
                 // measure Bob's qubits
-                for (i in 0..chunk-1) {
-
+                for (qubit in qubits) {
                     // Bob chooses random basis by drawing a random bit
                     // 0 will represent PauliZ basis
                     // 1 will represent PauliX basis
                     let bobBasisSelected = DrawRandomBool(0.5);
                     set bobBases += [bobBasisSelected];
-                    let bobResult = Measure([bobBasisSelected ? PauliX | PauliZ], [qubits[i]]);
+                    let bobResult = Measure([bobBasisSelected ? PauliX | PauliZ], [qubit]);
                     set bobResults += [ResultAsBool(bobResult)];
-                    Reset(qubits[i]);
+                    Reset(qubit);
                 }   
             }
         }
