@@ -13,19 +13,19 @@
     @EntryPoint()
     operation Start() : Unit {
         
-        let result1 = RunBB84Protocol(256, 0.5);
-        let result2 = RunBB84Protocol(256, 0.10);
+        let result1 = RunBB84Protocol(256, 1.0);
+        let result2 = RunBB84Protocol(256, 0.5);
         let result3 = RunBB84Protocol(256, 0.0);
 
-        Message("Running the protocol for 256bit key with eavesdropping probability 1 resulted in " + (result1 ? "succcess" | "failure"));
-        Message("Running the protocol for 256bit key with eavesdropping probability 0.25 resulted in " + (result2 ? "succcess" | "failure"));
-        Message("Running the protocol for 256bit key with eavesdropping probability 0.0 resulted in " + (result3 ? "succcess" | "failure"));
+        Message("Running the protocol for 256 bit key with eavesdropping probability 1 resulted in " + (result1 ? "succcess" | "failure"));
+        Message("Running the protocol for 256 bit key with eavesdropping probability 0.5 resulted in " + (result2 ? "succcess" | "failure"));
+        Message("Running the protocol for 256 bit key with eavesdropping probability 0.0 resulted in " + (result3 ? "succcess" | "failure"));
     }
 
     operation RunBB84Protocol(expectedKeyLength : Int, eavesdropperProbability : Double) : Bool {
         let chunk = 16;
 
-        // we want to transfer (4 + 𝛿)n required bits
+        // we want to transfer 4n + 𝛿 required bits
         // n = expectedKeyLength
         // chunk = amount of qubits to allocate and send in a single roundtrip
         // 𝛿 = extra bits in case the low sample size causes us to end up with less than required bits
@@ -83,7 +83,7 @@
 
         Message("Comparing bases....");
         mutable aliceValuesAfterBasisComparison = new Bool[0];
-        mutable bobValuesAfterBasisComparison = new Bool[0];
+        mutable bobResultsAfterBasisComparison = new Bool[0];
 
         // compare bases and pick shared results
         for (i in 0..Length(aliceValues)-1) {
@@ -91,7 +91,7 @@
             // they can use the corresponding bit
             if (aliceBases[i] == bobBases[i]) {
                 set aliceValuesAfterBasisComparison += [aliceValues[i]];
-                set bobValuesAfterBasisComparison += [bobResults[i]];
+                set bobResultsAfterBasisComparison += [bobResults[i]];
             }
         }
         Message("Bases compared.");
@@ -114,7 +114,7 @@
         for (i in eavesdropppingIndices) {
             // if Alice and Bob get different result, but used same basis
             // it means that there must have been an eavesdropper (assuming perfect communication)
-            if (aliceValuesAfterBasisComparison[i] != bobValuesAfterBasisComparison[i]) {
+            if (aliceValuesAfterBasisComparison[i] != bobResultsAfterBasisComparison[i]) {
                 set differences += 1;
             }
         }
@@ -129,7 +129,7 @@
 
         // remove values used for eavesdropping check from comparison
         let aliceKey = Exclude(eavesdropppingIndices, aliceValuesAfterBasisComparison);
-        let bobKey = Exclude(eavesdropppingIndices, bobValuesAfterBasisComparison);
+        let bobKey = Exclude(eavesdropppingIndices, bobResultsAfterBasisComparison);
 
         Message("");
         Message($"Alice's key: {BoolArrayToString(aliceKey)} | key length: {IntAsString(Length(aliceKey))}");
@@ -150,7 +150,7 @@
 
         Message("");
         let trimmedKey = aliceKey[0..expectedKeyLength-1];
-        Message($"Final trimmed {expectedKeyLength}bit key: {BoolArrayToString(trimmedKey)}");
+        Message($"Final trimmed {expectedKeyLength} bit key: {BoolArrayToString(trimmedKey)}");
 
         return true;
     }
