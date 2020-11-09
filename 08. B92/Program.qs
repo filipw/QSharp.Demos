@@ -60,7 +60,7 @@
                 for (qubit in qubits) {
                     let bobValue = DrawRandomBool(0.5);
                     set bobValues += [bobValue];
-                    let bobResult = Measure([bobValue ? PauliZ | PauliX], [qubit]);
+                    let bobResult = Measure([bobValue ? PauliX | PauliZ], [qubit]);
                     // |0> or |+>  produces a 0 
                     // |1> or |->  produces a 1
                     set bobResults += [ResultAsBool(bobResult)];
@@ -72,17 +72,18 @@
         Message("***********");
         Message("");
 
-        Message("Comparing bases....");
+        Message("Sharing Bob's results....");
         mutable aliceValuesAfterBobResultsCheck = new Bool[0];
         mutable bobValuesAfterBobResultsCheck = new Bool[0];
 
         for (i in 0..Length(bobResults)-1) {
             if (bobResults[i] == true) {
+                // Alice's valsue is a
                 set aliceValuesAfterBobResultsCheck += [aliceValues[i]];
-                set bobValuesAfterBobResultsCheck += [bobValues[i]];
+                // Bob's value (1 - a)
+                set bobValuesAfterBobResultsCheck += [not bobValues[i]];
             }
         }
-        Message("Bob's results checked.");
         Message("");
 
         Message("Performing eavesdropping check....");
