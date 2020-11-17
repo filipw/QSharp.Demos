@@ -32,6 +32,9 @@
         // at the end of the protocl execution. In our case we assume 𝛿 = 4 * chunk (32)
         let roundtrips = (8 * expectedKeyLength + 4 * chunk) / chunk;
 
+        Message("***********");
+        Message($"Running the B92 protocol for expected key length: {expectedKeyLength}");
+
         mutable aliceValues = new Bool[0];
         mutable bobResults = new Bool[0];
         mutable bobValues = new Bool[0];
@@ -47,7 +50,7 @@
                     set aliceValues += [valueSelected];
                 }
 
-                // //eavesdropper!!!
+                // eavesdropper!!!
                 for (qubit in qubits) {
                     let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
                     if (shouldEavesdrop) {
@@ -61,15 +64,14 @@
                     let bobValue = DrawRandomBool(0.5);
                     set bobValues += [bobValue];
                     let bobResult = Measure([bobValue ? PauliX | PauliZ], [qubit]);
-                    // |0> or |+>  produces a 0 
-                    // |1> or |->  produces a 1
+                    // |0> or |+>  maps to a classical 0 
+                    // |1> or |->  maps to a classical 1
                     set bobResults += [ResultAsBool(bobResult)];
                     Reset(qubit);
                 }   
             }
         }
         
-        Message("***********");
         Message("");
 
         Message("Sharing Bob's results....");
