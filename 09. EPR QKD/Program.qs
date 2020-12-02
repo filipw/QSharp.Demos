@@ -34,8 +34,8 @@
 
         // we should theoretically require 4 * n EPR pairs to produce a key of length n
         // however, since even uniform superposition may give higher deviations at small sample sizes
-        // we will use 5 * n to be on the safe side
-        for (i in 0..(5 * expectedKeyLength)) {
+        // we will use 4 * n + 𝛿, where 𝛿 is 64 to be on the safe side
+        for (i in 0..(4 * expectedKeyLength + 64)) {
             using ((aliceQubit, bobQubit) = (Qubit(), Qubit())) {
 
                 // create entanglement between aliceQubit and bobQubit
