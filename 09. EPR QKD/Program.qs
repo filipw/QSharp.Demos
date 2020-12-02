@@ -1,4 +1,4 @@
-﻿namespace BB84Example {
+﻿namespace EPRQKDExample {
 
     open Microsoft.Quantum.Canon;
     open Microsoft.Quantum.Intrinsic;
@@ -23,44 +23,46 @@
     }
 
     operation RunEPRQKDProtocol(expectedKeyLength : Int, eavesdropperProbability : Double) : Bool {
+        Message("***********");
         Message($"Running the EPR QKD protocol for expected key length: {expectedKeyLength}");
 
         mutable aliceResults = new Bool[0];
-        mutable bobResults = new Bool[0];
         mutable aliceBases = new Bool[0];
+
+        mutable bobResults = new Bool[0];
         mutable bobBases = new Bool[0];
 
-        for (roundtrip in 0..(5 * expectedKeyLength)) {
+        // we should theoretically require 4 * n EPR pairs to produce a key of length n
+        // however, since even uniform superposition may give higher deviations at small sample sizes
+        // we will use 5 * n to be on the safe side
+        for (i in 0..(5 * expectedKeyLength)) {
             using ((aliceQubit, bobQubit) = (Qubit(), Qubit())) {
+
                 // create entanglement between aliceQubit and bobQubit
                 H(aliceQubit);
                 CNOT(aliceQubit, bobQubit);
 
-                // Alice and Bob choose a random basis by drawing a random bit
-                // 0 will represent |0> and |1> computational (PauliZ) basis
-                // 1 will represent |-> and |+> Hadamard (PauliX) basis
-                let aliceBasisSelected = DrawRandomBool(0.5);
-                set aliceBases += [aliceBasisSelected];
-                let aliceResult = Measure([aliceBasisSelected ? PauliX | PauliZ], [aliceQubit]);
-                set aliceResults += [ResultAsBool(aliceResult)];
-                Reset(aliceQubit);
-
+                // determine if eavesdropper should jump in
+                // if so, let Eve interact with the qubit of Bob
                 let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
                 if (shouldEavesdrop) {
                     let eveBasisSelected = DrawRandomBool(0.5);
                     let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [bobQubit]);
                 }
 
-                let bobBasisSelected = DrawRandomBool(0.5);
-                set bobBases += [bobBasisSelected];
-                let bobResult = Measure([bobBasisSelected ? PauliX | PauliZ], [bobQubit]);
-                set bobResults += [ResultAsBool(bobResult)];
-                Reset(bobQubit);
+                // Alice and Bob choose a random basis by drawing a random bit
+                // 0 will represent {|0>,|1>} computational (PauliZ) basis
+                // 1 will represent {|->,|+>} Hadamard (PauliX) basis
+                let (aliceBase, aliceResult) = MeasureInRandomBasis(aliceQubit);
+                set aliceBases += [aliceBase == PauliX];
+                set aliceResults += [aliceResult];
+
+                let (bobBase, bobResult) = MeasureInRandomBasis(bobQubit);
+                set bobBases += [bobBase == PauliX];
+                set bobResults += [bobResult];
             }
         }
 
-        Message("***********");
-        Message("Comparing bases....");
         mutable aliceResultsAfterBasisComparison = new Bool[0];
         mutable bobResultsAfterBasisComparison = new Bool[0];
 
@@ -73,11 +75,6 @@
                 set bobResultsAfterBasisComparison += [bobResults[i]];
             }
         }
-        Message("Bases compared.");
-        Message("");
-
-        //Message($"Final Alice bit key: {BoolArrayToString(aliceResultsAfterBasisComparison)}");
-        //Message($"Final Bob bit key  : {BoolArrayToString(bobResultsAfterBasisComparison)}");
 
         Message("Performing eavesdropping check....");
         // select a random bit of every 2 bits for eavesdropping check
@@ -95,7 +92,7 @@
         mutable differences = 0;
         for (i in eavesdropppingIndices) {
             // if Alice and Bob get different result, but used same basis
-            // it means that there must have been an eavesdropper (assuming perfect communication)
+            // it means that there must have been an eavesdropper
             if (aliceResultsAfterBasisComparison[i] != bobResultsAfterBasisComparison[i]) {
                 set differences += 1;
             }
@@ -119,13 +116,6 @@
         Message($"Bob's key:   {BoolArrayToString(bobKey)} | key length: {IntAsString(Length(bobKey))}");
         Message("");
 
-        let keysEqual = EqualA(EqualB, aliceKey, bobKey);
-        Message($"Keys are equal? {keysEqual}");
-        if (not keysEqual) {
-            Message("Keys are not equal, aborting the protocol");
-            return false;
-        }
-
         if (Length(aliceKey) < expectedKeyLength) {
             Message("Key is too short, aborting the protocol");
             return false;
@@ -136,6 +126,14 @@
         Message($"Final trimmed {expectedKeyLength} bit shared key: {BoolArrayToString(trimmedKey)}");
 
         return true;
+    }
+
+    operation MeasureInRandomBasis(qubit : Qubit) : (Pauli, Bool) {
+        let basisSelected = DrawRandomBool(0.5) ? PauliX | PauliZ;
+        let aliceResult = Measure([basisSelected], [qubit]);
+        let classicalResult = ResultAsBool(aliceResult);
+        Reset(qubit);
+        return (basisSelected, classicalResult);
     }
 
     function BoolArrayToString(array : Bool[]) : String {
