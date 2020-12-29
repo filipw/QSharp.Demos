@@ -6,10 +6,24 @@
     open Microsoft.Quantum.Measurement;
     
 
+    @EntryPoint()
+    operation Main() : Unit {
+            Run("Identity", Identity);
+            Run("Bitflip", Bitflip);
+            Run("HZH", HZH);
+            Run("Rx45", Rx45);
+    }
+
+    operation Run(name : String, fn: (Int => Int)) : Unit {
+        let iterations = 4096;
+        Message($"Running {name} operation {iterations} times.");
+        let results = fn(iterations);
+        Message($"Ones: {results}.");
+        Message($"Zeros: {iterations - results}.");
+    }
+
     operation Identity(count : Int) : Int {
-
         mutable resultsTotal = 0;
-
         using (qubit = Qubit()) {
             for (idx in 1..count) {
                 I(qubit);                
@@ -22,9 +36,7 @@
     }
 
     operation Bitflip(count : Int) : Int {
-
         mutable resultsTotal = 0;
-
         using (qubit = Qubit()) {
             for (idx in 1..count) {
                 X(qubit);                
@@ -37,9 +49,7 @@
     }
 
     operation HZH(count : Int) : Int {
-
         mutable resultsTotal = 0;
-
         using (qubit = Qubit()) {
             for (idx in 1..count) {
                 H(qubit);                
@@ -54,9 +64,7 @@
     }
 
     operation Rx45(count : Int) : Int {
-
         mutable resultsTotal = 0;
-
         using (qubit = Qubit()) {
             for (idx in 1..count) {
                 Rx(45.0, qubit);                
