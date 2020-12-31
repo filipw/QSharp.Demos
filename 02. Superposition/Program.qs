@@ -9,7 +9,7 @@
     @EntryPoint()
     operation Start() : Unit {
 
-        MeasureQubits(1000);
+        MeasureQubits(4096);
         Message("***********");
 
         let randomBits = RandomNumberGenerator();

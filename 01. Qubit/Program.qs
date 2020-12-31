@@ -9,13 +9,13 @@
     operation Start() : Unit {
 
         // measurement in Z basis should produce 0 result 100% of time 
-        MeasureQubits(100, PauliZ);
+        MeasureQubits(4096, PauliZ);
 
         Message("***********");
 
         // measurement in X basis should produce 0 result 50% of time
         // and 1 result the other 50% of time
-        MeasureQubits(100, PauliX);
+        MeasureQubits(4096, PauliX);
     }
 
     operation MeasureQubits(count : Int, measurementBasis : Pauli) : Unit {
