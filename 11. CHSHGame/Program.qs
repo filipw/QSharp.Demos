@@ -15,17 +15,17 @@
         mutable classicalWins = 0;
         mutable quantumWins = 0;
         for (i in 0..runs) {
-            let aliceBit = DrawRandomBool(0.5);
-            let bobBit = DrawRandomBool(0.5);
+            let aliceRefereeBit = DrawRandomBool(0.5);
+            let bobRefereeBit = DrawRandomBool(0.5);
 
-            let classicalChosenBits = RunClassicalStrategy(aliceBit, bobBit);
-            if ((aliceBit and bobBit) == Xor(classicalChosenBits))
+            let classicalChosenBits = RunClassicalStrategy(aliceRefereeBit, bobRefereeBit);
+            if ((aliceRefereeBit and bobRefereeBit) == Xor(classicalChosenBits))
             {
                 set classicalWins += 1;
             }
 
-            let quantumChosenBits = RunQuantumStrategy(aliceBit, bobBit);
-            if ((aliceBit and bobBit) == Xor(quantumChosenBits))
+            let quantumChosenBits = RunQuantumStrategy(aliceRefereeBit, bobRefereeBit);
+            if ((aliceRefereeBit and bobRefereeBit) == Xor(quantumChosenBits))
             {
                 set quantumWins += 1;
             }
@@ -46,7 +46,7 @@
         using ((aliceQubit, bobQubit) = (Qubit(), Qubit())) {
             InitBellState(aliceQubit, bobQubit);
 
-            let shouldAliceMeasureFirst = DrawRandomBool(0.5);
+            let shouldAliceMeasureFirst = DrawRandomBool(0.6);
             if (shouldAliceMeasureFirst) {
                 return (AliceMeasurement(aliceBit, aliceQubit), not BobMeasurement(bobBit, bobQubit));
             } 
@@ -72,7 +72,7 @@
         return result;
 
         // different way of expressing the same
-        // X basis is the coputational basis rotated by -π/4
+        // X basis is the computational basis rotated by -π/4
         // let rotationAngle = bit ? (-2.0 * PI() / 4.0) | 0.0;
         // Ry(rotationAngle, q);
         // return MResetZ(q) == One;
