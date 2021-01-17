@@ -11,10 +11,10 @@
 
     @EntryPoint()
     operation Main() : Unit {
-        Message($"f0 is {IsConstant(OracleF0) ? "" | "not"} constant.");
-        Message($"f1 is {IsConstant(OracleF1) ? "" | "not"} constant.");
-        Message($"f2 is {IsConstant(OracleF2) ? "" | "not"} constant.");
-        Message($"f3 is {IsConstant(OracleF3) ? "" | "not"} constant.");
+        Message($"f0 is{IsConstant(OracleF0) ? "" | " not"} constant.");
+        Message($"f1 is{IsConstant(OracleF1) ? "" | " not"} constant.");
+        Message($"f2 is{IsConstant(OracleF2) ? "" | " not"} constant.");
+        Message($"f3 is{IsConstant(OracleF3) ? "" | " not"} constant.");
     }
 
     operation IsConstant(oracle : ((Qubit, Qubit) => Unit)) : Bool {
@@ -55,6 +55,6 @@
         // balanced opposite
         // f(0) = 1, f(1) = 0
         CNOT(q1, q2);
-        X(q1);
+        X(q2);
     }
 }
