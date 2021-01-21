@@ -11,27 +11,27 @@
 
     @EntryPoint()
     operation Main() : Unit {
-        Message($"f0 is{IsConstant(OracleF0) ? "" | " not"} constant.");
-        Message($"f1 is{IsConstant(OracleF1) ? "" | " not"} constant.");
-        Message($"f2 is{IsConstant(OracleF2) ? "" | " not"} constant.");
-        Message($"f3 is{IsConstant(OracleF3) ? "" | " not"} constant.");
+        Message($"f0 is {RunDeutschAlogirthm(OracleF0) ? "constant" | "balanced"}.");
+        Message($"f1 is {RunDeutschAlogirthm(OracleF1) ? "constant" | "balanced"}.");
+        Message($"f2 is {RunDeutschAlogirthm(OracleF2) ? "constant" | "balanced"}.");
+        Message($"f3 is {RunDeutschAlogirthm(OracleF3) ? "constant" | "balanced"}.");
     }
 
-    operation IsConstant(oracle : ((Qubit, Qubit) => Unit)) : Bool {
-        mutable isConstantFunction = true;
+    operation RunDeutschAlogirthm(oracle : ((Qubit, Qubit) => Unit)) : Bool {
+        mutable isFunctionConstant = true;
         using ((q1, q2) = (Qubit(), Qubit())) {
-            H(q1);                                    
             X(q2);
+            H(q1);                                    
             H(q2);
 
             oracle(q1, q2);                       
 
             H(q1);                                     
 
-            set isConstantFunction = MResetZ(q1) == Zero;         
+            set isFunctionConstant = MResetZ(q1) == Zero;         
             Reset(q2);       
         }
-        return isConstantFunction;
+        return isFunctionConstant;
     }
 
     operation OracleF0(q1 : Qubit, q2 : Qubit) : Unit is Adj {
