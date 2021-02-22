@@ -23,16 +23,14 @@
         mutable resultsTotal = 0;
         Message("Running qubit measurement " + IntAsString(count) + " times");
 
-        using (qubit = Qubit()) {
-
-            for (idx in 0..count) {
-                let result = Measure([measurementBasis], [qubit]);
-                set resultsTotal += result == One ? 1 | 0;
-                Reset(qubit);
-            }
-
-            Message($"Received " + IntAsString(resultsTotal) + " ones.");
-            Message($"Received " + IntAsString(count - resultsTotal) + " zeros.");
+        use qubit = Qubit();
+        for idx in 0..count {
+            let result = Measure([measurementBasis], [qubit]);
+            set resultsTotal += result == One ? 1 | 0;
+            Reset(qubit);
         }
+
+        Message($"Received " + IntAsString(resultsTotal) + " ones.");
+        Message($"Received " + IntAsString(count - resultsTotal) + " zeros.");
     }
 }
