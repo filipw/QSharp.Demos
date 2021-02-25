@@ -19,18 +19,17 @@
 
     operation RunDeutschAlogirthm(oracle : ((Qubit, Qubit) => Unit)) : Bool {
         mutable isFunctionConstant = true;
-        using ((q1, q2) = (Qubit(), Qubit())) {
-            X(q2);
-            H(q1);                                    
-            H(q2);
+        use (q1, q2) = (Qubit(), Qubit());
+        X(q2);
+        H(q1);                                    
+        H(q2);
 
-            oracle(q1, q2);                       
+        oracle(q1, q2);                       
 
-            H(q1);                                     
+        H(q1);                                     
 
-            set isFunctionConstant = MResetZ(q1) == Zero;         
-            Reset(q2);       
-        }
+        set isFunctionConstant = MResetZ(q1) == Zero;         
+        Reset(q2);       
         return isFunctionConstant;
     }
 
