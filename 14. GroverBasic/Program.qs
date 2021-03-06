@@ -13,16 +13,21 @@
 
     @EntryPoint()
     operation Main() : Unit {
-        // 2 is marked
-        let result = Simple();
-        Message($"Measured simple: {result}");
+        let result = TwoQubitFixedSearch();
+        Message($"Expected to find a fixed: 2, found: {result}");
+
+        for i in 0..3 {
+            let found = TwoQubitGenericSearch(i);
+            Message($"Expected to find: {i}, found: {found}");
+        }
 
         // marked input and amount of qubits is configurable
-        let complex = Complex(10, 4);
-        Message($"Measured complex: {complex}");
+        //let complex = Complex(10, 4);
+        //Message($"Measured complex: {complex}");
     }
 
-    operation Simple() : Int {
+    // 2 is marked
+    operation TwoQubitFixedSearch() : Int {
         use (q1, q2) = (Qubit(), Qubit());
 
         // superposition
@@ -34,16 +39,26 @@
         CZ(q1, q2);
         DumpMachine();
 
-        // swap phase change to state -|01>
+        // swap phase change to state -|10>
         X(q1);
         DumpMachine();
 
-        // amplitude amplification
-        X(q1);
-        X(q2);
+        // invert about the mean
         H(q1);
         H(q2);
+        DumpMachine();
+
+        X(q1);
+        X(q2);
+        DumpMachine();
+
         CZ(q1, q2);
+        DumpMachine();
+
+        X(q1);
+        X(q2);
+        DumpMachine();
+
         H(q1);
         H(q2);
 
@@ -51,9 +66,35 @@
 
         let register = LittleEndian([q1, q2]);
         let number = MeasureInteger(register);
-        Reset(q1);
-        Reset(q2);
+        return number;
+    }    
 
+    operation TwoQubitGenericSearch(numberToFind : Int) : Int {
+        use qubits = Qubit[2];
+
+        // superposition
+        ApplyToEachA(H, qubits);
+
+        // CPHASE or CR(π), only flips the phase of |11>
+        CZ(qubits[0], qubits[1]);
+
+        // swap phase change to desired state
+        if (numberToFind == 1 or numberToFind == 0) {
+            X(qubits[1]);
+        }
+        if (numberToFind == 2 or numberToFind == 0) {
+            X(qubits[0]);
+        }
+
+        // invert about the mean
+        ApplyToEachA(H, qubits);
+        ApplyToEachA(X, qubits);
+        CZ(qubits[0], qubits[1]);
+        ApplyToEachA(X, qubits);
+        ApplyToEachA(H, qubits);
+
+        let register = LittleEndian(qubits);
+        let number = MeasureInteger(register);
         return number;
     }
 
@@ -76,6 +117,8 @@
                 X(qubits[i]);
             }
         }
+        
+        // ReflectAboutInteger(markedNumber, LittleEndian(qubits));
         DumpMachine();
 
         // amplitude amplification
