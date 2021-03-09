@@ -22,8 +22,11 @@
         }
 
         // marked input and amount of qubits is configurable
-        //let complex = Complex(10, 4);
-        //Message($"Measured complex: {complex}");
+        let advanced = Advanced(7, 3);
+        Message($"Measured advanced example: {advanced}");
+
+        let advancedImproved = AdvancedImproved(4, 10, 5);
+        Message($"Measured improved advanced example: {advancedImproved}");
     }
 
     // 2 is marked
@@ -69,7 +72,7 @@
         return number;
     }    
 
-    operation TwoQubitGenericSearch(numberToFind : Int) : Int {
+    operation TwoQubitGenericSearch(markIndex : Int) : Int {
         use qubits = Qubit[2];
 
         // superposition
@@ -79,10 +82,10 @@
         CZ(qubits[0], qubits[1]);
 
         // swap phase change to desired state
-        if (numberToFind == 1 or numberToFind == 0) {
+        if (markIndex == 1 or markIndex == 0) {
             X(qubits[1]);
         }
-        if (numberToFind == 2 or numberToFind == 0) {
+        if (markIndex == 2 or markIndex == 0) {
             X(qubits[0]);
         }
 
@@ -98,7 +101,7 @@
         return number;
     }
 
-    operation Complex(markedNumber : Int, numberOfQubits : Int) : Int {
+    operation Advanced(markIndex : Int, numberOfQubits : Int) : Int {
         use qubits = Qubit[numberOfQubits];
 
         // superposition
@@ -110,15 +113,13 @@
         DumpMachine();
 
         // swap phase change onto the marked output
-        let markerBits = IntAsBoolArray(markedNumber, numberOfQubits);
+        let markerBits = IntAsBoolArray(markIndex, numberOfQubits);
         for i in 0..numberOfQubits-1
         {
             if not markerBits[i] {
                 X(qubits[i]);
             }
         }
-        
-        // ReflectAboutInteger(markedNumber, LittleEndian(qubits));
         DumpMachine();
 
         // amplitude amplification
@@ -134,5 +135,37 @@
         ResetAll(qubits);
 
         return number;
+    }
+
+    operation AdvancedImproved(iterations : Int, markIndex : Int, numberOfQubits : Int) : Int {
+        use qubits = Qubit[numberOfQubits];
+        let register = LittleEndian(qubits);
+
+        // superposition
+        ApplyToEachA(H, qubits);
+        DumpRegister((), qubits);
+
+        for i in 1 .. iterations {
+            // mark the required number
+            ReflectAboutInteger(markIndex, register);
+            DumpRegister((), qubits);
+
+            // amplitude amplification
+            AmplifyAmplitude(qubits);
+            DumpRegister((), qubits);
+        }
+
+        let number = MeasureInteger(register);
+        ResetAll(qubits);
+
+        return number;
+    }
+
+    operation AmplifyAmplitude(qubits : Qubit[]) : Unit is Adj {
+        ApplyToEachA(H, qubits);
+        ApplyToEachA(X, qubits);
+        Controlled Z(Most(qubits), Tail(qubits));
+        ApplyToEachA(X, qubits);
+        ApplyToEachA(H, qubits);
     }
 }
