@@ -143,16 +143,16 @@
 
         // superposition
         ApplyToEachA(H, qubits);
-        DumpRegister((), qubits);
+        DumpMachine();
 
         for i in 1 .. iterations {
             // mark the required number
             ReflectAboutInteger(markIndex, register);
-            DumpRegister((), qubits);
+            DumpMachine();
 
             // amplitude amplification
             AmplifyAmplitude(qubits);
-            DumpRegister((), qubits);
+            DumpMachine();
         }
 
         let number = MeasureInteger(register);
