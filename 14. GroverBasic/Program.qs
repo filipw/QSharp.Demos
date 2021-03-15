@@ -22,10 +22,10 @@
         }
 
         // marked input and amount of qubits is configurable
-        let advanced = Advanced(7, 3);
+        let advanced = Advanced(10, 4);
         Message($"Measured advanced example: {advanced}");
 
-        let advancedImproved = AdvancedImproved(4, 10, 5);
+        let advancedImproved = AdvancedImproved(10, 4);
         Message($"Measured improved advanced example: {advancedImproved}");
     }
 
@@ -108,27 +108,13 @@
         ApplyToEachA(H, qubits);
         DumpMachine();
 
-        // CPHASE or CR(π), only flips the phase of |11..1>
-        Controlled Z(Most(qubits), Tail(qubits));
-        DumpMachine();
+        for x in 1..numberOfQubits-1 {
+            MarkSolution(markIndex, numberOfQubits, qubits);
 
-        // swap phase change onto the marked output
-        let markerBits = IntAsBoolArray(markIndex, numberOfQubits);
-        for i in 0..numberOfQubits-1
-        {
-            if not markerBits[i] {
-                X(qubits[i]);
-            }
+            // amplitude amplification
+            AmplifyAmplitude(qubits);
+            DumpMachine();
         }
-        DumpMachine();
-
-        // amplitude amplification
-        ApplyToEachA(H, qubits);
-        ApplyToEachA(X, qubits);
-        Controlled Z(Most(qubits), Tail(qubits));
-        ApplyToEachA(X, qubits);
-        ApplyToEachA(H, qubits);
-        DumpMachine();
 
         let register = LittleEndian(qubits);
         let number = MeasureInteger(register);
@@ -137,7 +123,7 @@
         return number;
     }
 
-    operation AdvancedImproved(iterations : Int, markIndex : Int, numberOfQubits : Int) : Int {
+    operation AdvancedImproved(markIndex : Int, numberOfQubits : Int) : Int {
         use qubits = Qubit[numberOfQubits];
         let register = LittleEndian(qubits);
 
@@ -145,10 +131,9 @@
         ApplyToEachA(H, qubits);
         DumpMachine();
 
-        for i in 1 .. iterations {
+        for x in 1..numberOfQubits-1 {
             // mark the required number
             ReflectAboutInteger(markIndex, register);
-            DumpMachine();
 
             // amplitude amplification
             AmplifyAmplitude(qubits);
@@ -162,10 +147,25 @@
     }
 
     operation AmplifyAmplitude(qubits : Qubit[]) : Unit is Adj {
-        ApplyToEachA(H, qubits);
-        ApplyToEachA(X, qubits);
-        Controlled Z(Most(qubits), Tail(qubits));
-        ApplyToEachA(X, qubits);
-        ApplyToEachA(H, qubits);
+        within {
+            ApplyToEachA(H, qubits);
+            ApplyToEachA(X, qubits);
+        } apply {
+            Controlled Z(Most(qubits), Tail(qubits));
+        }
+    }
+
+    operation MarkSolution(markIndex : Int, numberOfQubits : Int, qubits : Qubit[]) : Unit is Adj {
+        within {
+            let markerBits = IntAsBoolArray(markIndex, numberOfQubits);
+            for i in 0..numberOfQubits-1
+            {
+                if not markerBits[i] {
+                    X(qubits[i]);
+                }
+            }
+        } apply {
+            Controlled Z(Most(qubits), Tail(qubits));
+        }
     }
 }
