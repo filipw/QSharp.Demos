@@ -20,13 +20,6 @@
             let found = TwoQubitGenericSearch(i);
             Message($"Expected to find: {i}, found: {found}");
         }
-
-        // marked input and amount of qubits is configurable
-        let advanced = Advanced(10, 4);
-        Message($"Measured advanced example: {advanced}");
-
-        let advancedImproved = AdvancedImproved(10, 4);
-        Message($"Measured improved advanced example: {advancedImproved}");
     }
 
     // 2 is marked
@@ -99,73 +92,5 @@
         let register = LittleEndian(qubits);
         let number = MeasureInteger(register);
         return number;
-    }
-
-    operation Advanced(markIndex : Int, numberOfQubits : Int) : Int {
-        use qubits = Qubit[numberOfQubits];
-
-        // superposition
-        ApplyToEachA(H, qubits);
-        DumpMachine();
-
-        for x in 1..numberOfQubits-1 {
-            MarkSolution(markIndex, numberOfQubits, qubits);
-
-            // amplitude amplification
-            AmplifyAmplitude(qubits);
-            DumpMachine();
-        }
-
-        let register = LittleEndian(qubits);
-        let number = MeasureInteger(register);
-        ResetAll(qubits);
-
-        return number;
-    }
-
-    operation AdvancedImproved(markIndex : Int, numberOfQubits : Int) : Int {
-        use qubits = Qubit[numberOfQubits];
-        let register = LittleEndian(qubits);
-
-        // superposition
-        ApplyToEachA(H, qubits);
-        DumpMachine();
-
-        for x in 1..numberOfQubits-1 {
-            // mark the required number
-            ReflectAboutInteger(markIndex, register);
-
-            // amplitude amplification
-            AmplifyAmplitude(qubits);
-            DumpMachine();
-        }
-
-        let number = MeasureInteger(register);
-        ResetAll(qubits);
-
-        return number;
-    }
-
-    operation AmplifyAmplitude(qubits : Qubit[]) : Unit is Adj {
-        within {
-            ApplyToEachA(H, qubits);
-            ApplyToEachA(X, qubits);
-        } apply {
-            Controlled Z(Most(qubits), Tail(qubits));
-        }
-    }
-
-    operation MarkSolution(markIndex : Int, numberOfQubits : Int, qubits : Qubit[]) : Unit is Adj {
-        within {
-            let markerBits = IntAsBoolArray(markIndex, numberOfQubits);
-            for i in 0..numberOfQubits-1
-            {
-                if not markerBits[i] {
-                    X(qubits[i]);
-                }
-            }
-        } apply {
-            Controlled Z(Most(qubits), Tail(qubits));
-        }
     }
 }
