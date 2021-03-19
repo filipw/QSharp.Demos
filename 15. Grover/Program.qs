@@ -13,26 +13,33 @@
 
     @EntryPoint()
     operation Main() : Unit {
-        let result = Grover1(10, 4);
+        let result = Grover(10, 4, 3);
         Message($"Measured Grover example: {result}");
 
-        let resultImproved = Grover2(10, 4);
+        let resultImproved = GroverVersion2(10, 4, 3);
         Message($"Measured Grover improved example: {resultImproved}");
     }
 
-    operation Grover1(markIndex : Int, numberOfQubits : Int) : Int {
+    operation Grover(markIndex : Int, numberOfQubits : Int, iterations : Int) : Int {
         use qubits = Qubit[numberOfQubits];
 
-        // superposition
+        // apply W
         ApplyToEachA(H, qubits);
-        DumpMachine();
 
-        for x in 0..numberOfQubits {
+        // Grover iterations
+        for x in 1..iterations {
+
+            // mark the solution
             MarkSolution(markIndex, numberOfQubits, qubits);
 
             // amplitude amplification
-            AmplifyAmplitude(qubits);
+            ApplyToEachA(H, qubits);
+            ApplyToEachA(X, qubits);
+            Controlled Z(Most(qubits), Tail(qubits));
+            ApplyToEachA(X, qubits);
+            ApplyToEachA(H, qubits);
             DumpMachine();
+            Message($"This was iteration {x}");
         }
 
         let register = LittleEndian(qubits);
@@ -42,21 +49,21 @@
         return number;
     }
 
-    operation Grover2(markIndex : Int, numberOfQubits : Int) : Int {
+    operation GroverVersion2(markIndex : Int, numberOfQubits : Int, iterations : Int) : Int {
         use qubits = Qubit[numberOfQubits];
         let register = LittleEndian(qubits);
 
         // superposition
         ApplyToEachA(H, qubits);
-        DumpMachine();
 
-        for x in 0..Ceiling(Sqrt(IntAsDouble(numberOfQubits))) {
+        for x in 1..iterations {
             // mark the required number
             ReflectAboutInteger(markIndex, register);
 
             // amplitude amplification
             AmplifyAmplitude(qubits);
             DumpMachine();
+            Message($"This was iteration {x}");
         }
 
         let number = MeasureInteger(register);
