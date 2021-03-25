@@ -13,12 +13,35 @@
 
     @EntryPoint()
     operation Main() : Unit {
-        use qubits = Qubit[4];
-        ApplyToEach(H, qubits);
-        Z(qubits[0]);
+        ManualThreeQubitQFT();
+        LibraryThreeQubitQFT();
+    }
+
+    operation ManualThreeQubitQFT() : Unit {
+        use qubits = Qubit[3];
+        X(qubits[0]);
+
+        H(qubits[0]);
+        Controlled Rz([qubits[1]], (PI()/2.0, qubits[0]));
+        Controlled Rz([qubits[2]], (PI()/4.0, qubits[0]));
+
+        H(qubits[1]);
+        Controlled Rz([qubits[2]], (PI()/2.0, qubits[1]));
+
+        H(qubits[2]);
+        SWAP(qubits[2], qubits[0]);
+
         DumpMachine();
-        let register = LittleEndian(qubits);
-        ApplyQuantumFourierTransform(register);
+        ResetAll(qubits);
+    }
+
+    operation LibraryThreeQubitQFT() : Unit {
+        use qubits = Qubit[3];
+        X(qubits[0]);
+
+        let register = BigEndian(qubits);
+        QFT(register);
+
         DumpMachine();
         ResetAll(qubits);
     }
