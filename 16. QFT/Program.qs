@@ -13,13 +13,16 @@
 
     @EntryPoint()
     operation Main() : Unit {
-        use qubits = Qubit[4];
-        ManualFourQubitQFT1(qubits);
-        ManualFourQubitQFT2(qubits);
-        LibraryFourQubitQFT(qubits);
+        FourQubitQFT();
+        LibraryFourQubitQFTBE();
+
+        InverseFourQubitQFT();
+        LibraryFourQubitQFTLE();
     }
 
-    operation ManualFourQubitQFT1(qubits : Qubit[]) : Unit {
+    operation FourQubitQFT() : Unit {
+        use qubits = Qubit[4];
+        let register = BigEndian(qubits);
         X(qubits[0]);
 
         H(qubits[0]);
@@ -32,43 +35,56 @@
         Controlled T([qubits[3]], qubits[1]);
 
         H(qubits[2]);
-        Controlled S([qubits[3]], qubits[1]);
+        Controlled S([qubits[3]], qubits[2]);
 
         H(qubits[3]);
-        SWAP(qubits[3], qubits[0]);
         SWAP(qubits[2], qubits[1]);
-
+        SWAP(qubits[3], qubits[0]);
         DumpMachine();
         ResetAll(qubits);
     }
 
-    operation ManualFourQubitQFT2(qubits : Qubit[]) : Unit {
-        X(qubits[0]);
+    operation InverseFourQubitQFT() : Unit {
+        use qubits = Qubit[4];
+        let register = LittleEndian(qubits);
+        ApplyXorInPlace(8, register);
 
-        H(qubits[0]);
-        Controlled Rz([qubits[1]], (PI()/2.0, qubits[0]));
-        Controlled Rz([qubits[2]], (PI()/4.0, qubits[0]));
-        Controlled Rz([qubits[3]], (PI()/8.0, qubits[0]));
-
-        H(qubits[1]);
-        Controlled Rz([qubits[2]], (PI()/2.0, qubits[1]));
-        Controlled Rz([qubits[3]], (PI()/4.0, qubits[1]));
+        H(qubits[3]);
+        Controlled S([qubits[2]], qubits[3]);
+        Controlled T([qubits[1]], qubits[3]);
+        Controlled Rz([qubits[0]], (PI()/8.0, qubits[3]));
 
         H(qubits[2]);
-        Controlled Rz([qubits[3]], (PI()/2.0, qubits[1]));
+        Controlled S([qubits[1]], qubits[2]);
+        Controlled T([qubits[0]], qubits[2]);
 
-        H(qubits[3]);
-        SWAP(qubits[3], qubits[0]);
-        SWAP(qubits[2], qubits[1]);
+        H(qubits[1]);
+        Controlled S([qubits[0]], qubits[1]);
+
+        H(qubits[0]);
+        SWAP(qubits[1], qubits[2]);
+        SWAP(qubits[0], qubits[3]);
 
         DumpMachine();
         ResetAll(qubits);
     }
 
-    operation LibraryFourQubitQFT(qubits : Qubit[]) : Unit {
-        X(qubits[0]);
+    operation LibraryFourQubitQFTLE() : Unit {
+        use qubits = Qubit[4];
+
+        let register = LittleEndian(qubits);
+        ApplyXorInPlace(8, register);
+        QFTLE(register);
+
+        DumpMachine();
+        ResetAll(qubits);
+    }
+
+    operation LibraryFourQubitQFTBE() : Unit {
+        use qubits = Qubit[4];
 
         let register = BigEndian(qubits);
+        X(qubits[0]);
         QFT(register);
 
         DumpMachine();
