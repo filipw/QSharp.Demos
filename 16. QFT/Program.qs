@@ -13,14 +13,15 @@
 
     @EntryPoint()
     operation Main() : Unit {
-        FourQubitQFT();
+        FourQubitQFTBE();
         LibraryFourQubitQFTBE();
 
-        InverseFourQubitQFT();
+        FourQubitQFTLE();
         LibraryFourQubitQFTLE();
     }
 
-    operation FourQubitQFT() : Unit {
+    // Nielsen and Chuang use Big Endian
+    operation FourQubitQFTBE() : Unit {
         use qubits = Qubit[4];
         let register = BigEndian(qubits);
         X(qubits[0]);
@@ -44,7 +45,18 @@
         ResetAll(qubits);
     }
 
-    operation InverseFourQubitQFT() : Unit {
+    operation LibraryFourQubitQFTBE() : Unit {
+        use qubits = Qubit[4];
+
+        let register = BigEndian(qubits);
+        X(qubits[0]);
+        QFT(register);
+
+        DumpMachine();
+        ResetAll(qubits);
+    }
+
+    operation FourQubitQFTLE() : Unit {
         use qubits = Qubit[4];
         let register = LittleEndian(qubits);
         ApplyXorInPlace(8, register);
@@ -75,17 +87,6 @@
         let register = LittleEndian(qubits);
         ApplyXorInPlace(8, register);
         QFTLE(register);
-
-        DumpMachine();
-        ResetAll(qubits);
-    }
-
-    operation LibraryFourQubitQFTBE() : Unit {
-        use qubits = Qubit[4];
-
-        let register = BigEndian(qubits);
-        X(qubits[0]);
-        QFT(register);
 
         DumpMachine();
         ResetAll(qubits);
