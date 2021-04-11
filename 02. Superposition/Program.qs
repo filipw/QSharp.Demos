@@ -21,12 +21,11 @@
 
         mutable resultsTotal = 0;
 
-        using (qubit = Qubit()) {
-            for (idx in 0..count) {
-                H(qubit);                
-                let result = MResetZ(qubit);
-                set resultsTotal += result == One ? 1 | 0;
-            }
+        use qubit = Qubit();
+        for idx in 0..count {
+            H(qubit);                
+            let result = MResetZ(qubit);
+            set resultsTotal += result == One ? 1 | 0;
         }
 
         Message($"Received " + IntAsString(resultsTotal) + " ones.");
@@ -37,12 +36,11 @@
 
         mutable randomBits = new Bool[32];
         
-        for (idx in 0..31) {
-            using(qubit = Qubit())  {   
-                H(qubit);                
-                let result = MResetZ(qubit);
-                set randomBits w/= idx <- result == One;
-            }
+        for idx in 0..31 {
+            use qubit = Qubit();   
+            H(qubit);                
+            let result = MResetZ(qubit);
+            set randomBits w/= idx <- result == One;
         }
         
         return randomBits;
