@@ -18,64 +18,148 @@
     operation Main() : Unit {
         use eigenstate = Qubit();
         
+
+        // *********************
+        Message("Z gate");
+        Message("");
+
+        Message("Expected result: 0 degrees");
         let z_oracle = DiscreteOracle(UForPauliZ);
         PreparePauliEigenstate(PauliZ, eigenstate);
-        Message("Expected result: 0 degrees");
+        RunLibraryEstimation(eigenstate, z_oracle, 3);
+        Reset(eigenstate);
+
+        PreparePauliEigenstate(PauliZ, eigenstate);
+        RunManualEstimation(eigenstate, UForPauliZ, 3);
+        Reset(eigenstate);
+
+        Message("");
+
+        Message("Expected result: 180 degrees");
+        X(eigenstate);
         RunLibraryEstimation(eigenstate, z_oracle, 3);
         Reset(eigenstate);
 
         X(eigenstate);
-        Message("Expected result: 180 degrees");
-        RunLibraryEstimation(eigenstate, z_oracle, 3);
+        RunManualEstimation(eigenstate, UForPauliZ, 3);
         Reset(eigenstate);
+        Message("");
+        Message("");
+        // *********************
 
+        // *********************
+        Message("**********************");
+        Message("T gate");
+        Message("");
 
+        Message("Expected result: 0 degrees");
         let t_oracle = DiscreteOracle(UForT);
         I(eigenstate);
-        Message("Expected result: 0 degrees");
+        RunLibraryEstimation(eigenstate, t_oracle, 3);
+        Reset(eigenstate);
+
+        I(eigenstate);
+        RunManualEstimation(eigenstate, UForT, 3);
+        Reset(eigenstate);
+
+        Message("");
+
+        Message("Expected result: 45 degrees");
+        X(eigenstate);
         RunLibraryEstimation(eigenstate, t_oracle, 3);
         Reset(eigenstate);
 
         X(eigenstate);
-        Message("Expected result: 45 degrees");
-        RunLibraryEstimation(eigenstate, t_oracle, 3);
+        RunManualEstimation(eigenstate, UForT, 3);
         Reset(eigenstate);
+        Message("");
+        Message("");
+        // *********************
 
+        // *********************
+        Message("**********************");
+        Message("S gate");
+        Message("");
+
+        Message("Expected result: 0 degrees");
         let s_oracle = DiscreteOracle(UForS);
         I(eigenstate);
-        Message("Expected result: 0 degrees");
+        RunLibraryEstimation(eigenstate, s_oracle, 3);
+        Reset(eigenstate);
+
+        I(eigenstate);
+        RunManualEstimation(eigenstate, UForS, 3);
+        Reset(eigenstate);
+
+        Message("");
+
+        Message("Expected result: 90 degrees");
+        X(eigenstate);
         RunLibraryEstimation(eigenstate, s_oracle, 3);
         Reset(eigenstate);
 
         X(eigenstate);
-        Message("Expected result: 90 degrees");
-        RunLibraryEstimation(eigenstate, s_oracle, 3);
+        RunManualEstimation(eigenstate, UForS, 3);
         Reset(eigenstate);
 
+        Message("");
+        Message("");
+        // *********************
 
-        let h_oracle = DiscreteOracle(UForHadamard);
-        Ry(-0.75 * PI(), eigenstate);
+        // *********************
+        Message("**********************");
+        Message("H gate");
+        Message("");
+
         Message("Expected result: 180 degrees");
+        let h_oracle = DiscreteOracle(UForH);
+        Ry(-0.75 * PI(), eigenstate);
+        RunLibraryEstimation(eigenstate, h_oracle, 3);
+        Reset(eigenstate);
+
+        Ry(-0.75 * PI(), eigenstate);
+        RunManualEstimation(eigenstate, UForH, 3);
+        Reset(eigenstate);
+
+        Message("");
+
+        Message("Expected result: 0 degrees");
+        Ry(0.25 * PI(), eigenstate);
         RunLibraryEstimation(eigenstate, h_oracle, 3);
         Reset(eigenstate);
 
         Ry(0.25 * PI(), eigenstate);
-        Message("Expected result: 0 degrees");
-        RunLibraryEstimation(eigenstate, h_oracle, 3);
+        RunManualEstimation(eigenstate, UForH, 3);
         Reset(eigenstate);
     }
 
-    operation RunLibraryEstimation(state : Qubit, oracle : DiscreteOracle, precision : Int) : Unit {
+    operation RunLibraryEstimation(eigenstate : Qubit, oracle : DiscreteOracle, precision : Int) : Unit {
         use qubits = Qubit[precision];
-            
-        QuantumPhaseEstimation(oracle, [state], BigEndian(qubits));
+        QuantumPhaseEstimation(oracle, [eigenstate], BigEndian(qubits));
 
         let phase = IntAsDouble(MeasureInteger(LittleEndian(Reversed(qubits)))) * 360.0 / IntAsDouble(2^precision);
-        Message($"Estimation result with precision {precision}: {phase} degrees");
+        Message($"Library estimation result with precision {precision}: {phase} degrees");
         ResetAll(qubits);
     }
 
-    operation UForHadamard(power : Int, qubits : Qubit[]) : Unit is Adj + Ctl {
+    operation RunManualEstimation(eigenstate : Qubit, U : ((Int, Qubit[]) => Unit is Adj + Ctl), precision : Int) : Unit {
+        use qubits = Qubit[precision];
+        let register = LittleEndian(qubits);
+            
+        ApplyToEachA(H, qubits);
+
+        for i in 0 .. precision - 1 {
+            Controlled U([qubits[i]], (2^i, [eigenstate]));
+        }
+
+        Adjoint QFTLE(register);
+
+        let phase = IntAsDouble(MeasureInteger(register)) * 360.0 / IntAsDouble(2^precision);
+        Message($"Manual estimation result with precision {precision}: {phase} degrees");
+        ResetAll(qubits);
+    }
+
+    operation UForH(power : Int, qubits : Qubit[]) : Unit is Adj + Ctl {
         for _ in 1 .. power {
             H(qubits[0]);
         }
