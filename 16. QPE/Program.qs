@@ -17,32 +17,26 @@
     @EntryPoint()
     operation Main() : Unit {
         use eigenstate = Qubit();
-        
 
         // *********************
         Message("Z gate");
         Message("");
 
         Message("Expected result: 0 degrees");
-        let z_oracle = DiscreteOracle(UForPauliZ);
         PreparePauliEigenstate(PauliZ, eigenstate);
-        RunLibraryEstimation(eigenstate, z_oracle, 3);
-        Reset(eigenstate);
+        RunLibraryEstimation(eigenstate, UForPauliZ, 3);
 
         PreparePauliEigenstate(PauliZ, eigenstate);
         RunManualEstimation(eigenstate, UForPauliZ, 3);
-        Reset(eigenstate);
 
         Message("");
 
         Message("Expected result: 180 degrees");
         X(eigenstate);
-        RunLibraryEstimation(eigenstate, z_oracle, 3);
-        Reset(eigenstate);
+        RunLibraryEstimation(eigenstate, UForPauliZ, 3);
 
         X(eigenstate);
         RunManualEstimation(eigenstate, UForPauliZ, 3);
-        Reset(eigenstate);
         Message("");
         Message("");
         // *********************
@@ -53,25 +47,20 @@
         Message("");
 
         Message("Expected result: 0 degrees");
-        let t_oracle = DiscreteOracle(UForT);
         I(eigenstate);
-        RunLibraryEstimation(eigenstate, t_oracle, 3);
-        Reset(eigenstate);
+        RunLibraryEstimation(eigenstate, UForT, 3);
 
         I(eigenstate);
         RunManualEstimation(eigenstate, UForT, 3);
-        Reset(eigenstate);
 
         Message("");
 
         Message("Expected result: 45 degrees");
         X(eigenstate);
-        RunLibraryEstimation(eigenstate, t_oracle, 3);
-        Reset(eigenstate);
+        RunLibraryEstimation(eigenstate, UForT, 3);
 
         X(eigenstate);
         RunManualEstimation(eigenstate, UForT, 3);
-        Reset(eigenstate);
         Message("");
         Message("");
         // *********************
@@ -82,25 +71,20 @@
         Message("");
 
         Message("Expected result: 0 degrees");
-        let s_oracle = DiscreteOracle(UForS);
         I(eigenstate);
-        RunLibraryEstimation(eigenstate, s_oracle, 3);
-        Reset(eigenstate);
+        RunLibraryEstimation(eigenstate, UForS, 3);
 
         I(eigenstate);
         RunManualEstimation(eigenstate, UForS, 3);
-        Reset(eigenstate);
 
         Message("");
 
         Message("Expected result: 90 degrees");
         X(eigenstate);
-        RunLibraryEstimation(eigenstate, s_oracle, 3);
-        Reset(eigenstate);
+        RunLibraryEstimation(eigenstate, UForS, 3);
 
         X(eigenstate);
         RunManualEstimation(eigenstate, UForS, 3);
-        Reset(eigenstate);
 
         Message("");
         Message("");
@@ -112,34 +96,30 @@
         Message("");
 
         Message("Expected result: 180 degrees");
-        let h_oracle = DiscreteOracle(UForH);
         Ry(-0.75 * PI(), eigenstate);
-        RunLibraryEstimation(eigenstate, h_oracle, 3);
-        Reset(eigenstate);
+        RunLibraryEstimation(eigenstate, UForH, 3);
 
         Ry(-0.75 * PI(), eigenstate);
         RunManualEstimation(eigenstate, UForH, 3);
-        Reset(eigenstate);
 
         Message("");
 
         Message("Expected result: 0 degrees");
         Ry(0.25 * PI(), eigenstate);
-        RunLibraryEstimation(eigenstate, h_oracle, 3);
-        Reset(eigenstate);
+        RunLibraryEstimation(eigenstate, UForH, 3);
 
         Ry(0.25 * PI(), eigenstate);
         RunManualEstimation(eigenstate, UForH, 3);
-        Reset(eigenstate);
     }
 
-    operation RunLibraryEstimation(eigenstate : Qubit, oracle : DiscreteOracle, precision : Int) : Unit {
+    operation RunLibraryEstimation(eigenstate : Qubit, U : ((Int, Qubit[]) => Unit is Adj + Ctl), precision : Int) : Unit {
         use qubits = Qubit[precision];
-        QuantumPhaseEstimation(oracle, [eigenstate], BigEndian(qubits));
+        QuantumPhaseEstimation(DiscreteOracle(U), [eigenstate], BigEndian(qubits));
 
         let phase = IntAsDouble(MeasureInteger(LittleEndian(Reversed(qubits)))) * 360.0 / IntAsDouble(2^precision);
         Message($"Library estimation result with precision {precision}: {phase} degrees");
         ResetAll(qubits);
+        Reset(eigenstate);
     }
 
     operation RunManualEstimation(eigenstate : Qubit, U : ((Int, Qubit[]) => Unit is Adj + Ctl), precision : Int) : Unit {
@@ -157,6 +137,7 @@
         let phase = IntAsDouble(MeasureInteger(register)) * 360.0 / IntAsDouble(2^precision);
         Message($"Manual estimation result with precision {precision}: {phase} degrees");
         ResetAll(qubits);
+        Reset(eigenstate);
     }
 
     operation UForH(power : Int, qubits : Qubit[]) : Unit is Adj + Ctl {
