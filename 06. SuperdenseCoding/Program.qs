@@ -5,7 +5,6 @@
     open Microsoft.Quantum.Measurement;
     open Microsoft.Quantum.Convert;
     open Microsoft.Quantum.Preparation;
-    
 
     @EntryPoint()
     operation Start() : Unit {
@@ -16,12 +15,11 @@
     }
 
     operation TestDenseCoding(val0 : Bool, val1 : Bool) : Unit {
-        using ((q0, q1) = (Qubit(), Qubit())) {
-                // prepare the maximally entangled state |Φ⁺⟩ between qubits
-                PrepareEntangledState([q0], [q1]);
-                Encode(val0, val1, q0);
-                Decode(q0, q1);
-        }
+        use (q0, q1) = (Qubit(), Qubit());
+        // prepare the maximally entangled state |Φ⁺⟩ between qubits
+        PrepareEntangledState([q0], [q1]);
+        Encode(val0, val1, q0);
+        Decode(q0, q1);
         Message("***************");
     }
 
