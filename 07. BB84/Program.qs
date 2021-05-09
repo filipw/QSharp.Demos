@@ -37,45 +37,44 @@
         mutable bobResults = new Bool[0];
         mutable bobBases = new Bool[0];
 
-        for (roundtrip in 0..roundtrips-1) {
-            using (qubits = Qubit[chunk]) {
+        for roundtrip in 0..roundtrips-1 {
+            use qubits = Qubit[chunk];
                 
-                // prepare Alice's qubits
-                for (qubit in qubits) {
-                    // Alice chooses random bit
-                    let valueSelected = DrawRandomBool(0.5);
-                    if (valueSelected) { X(qubit); }
-                    set aliceValues += [valueSelected];
+            // prepare Alice's qubits
+            for qubit in qubits {
+                // Alice chooses random bit
+                let valueSelected = DrawRandomBool(0.5);
+                if (valueSelected) { X(qubit); }
+                set aliceValues += [valueSelected];
 
-                    // Alice chooses random basis by drawing a random bit
-                    // 0 will represent |0> and |1> computational (PauliZ) basis
-                    // 1 will represent |-> and |+> Hadamard (PauliX) basis
-                    let aliceBasisSelected = DrawRandomBool(0.5);
-                    if (aliceBasisSelected) { H(qubit); }
-                    set aliceBases += [aliceBasisSelected];
-                }
-
-                //eavesdropper!!!
-                for (qubit in qubits) {
-                    let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
-                    if (shouldEavesdrop) {
-                        let eveBasisSelected = DrawRandomBool(0.5);
-                        let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [qubit]);
-                    }
-                }
-
-                // measure Bob's qubits
-                for (qubit in qubits) {
-                    // Bob chooses random basis by drawing a random bit
-                    // 0 will represent PauliZ basis
-                    // 1 will represent PauliX basis
-                    let bobBasisSelected = DrawRandomBool(0.5);
-                    set bobBases += [bobBasisSelected];
-                    let bobResult = Measure([bobBasisSelected ? PauliX | PauliZ], [qubit]);
-                    set bobResults += [ResultAsBool(bobResult)];
-                    Reset(qubit);
-                }   
+                // Alice chooses random basis by drawing a random bit
+                // 0 will represent |0> and |1> computational (PauliZ) basis
+                // 1 will represent |-> and |+> Hadamard (PauliX) basis
+                let aliceBasisSelected = DrawRandomBool(0.5);
+                if (aliceBasisSelected) { H(qubit); }
+                set aliceBases += [aliceBasisSelected];
             }
+
+            //eavesdropper!!!
+            for qubit in qubits {
+                let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
+                if (shouldEavesdrop) {
+                    let eveBasisSelected = DrawRandomBool(0.5);
+                    let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [qubit]);
+                }
+            }
+
+            // measure Bob's qubits
+            for qubit in qubits {
+                // Bob chooses random basis by drawing a random bit
+                // 0 will represent PauliZ basis
+                // 1 will represent PauliX basis
+                let bobBasisSelected = DrawRandomBool(0.5);
+                set bobBases += [bobBasisSelected];
+                let bobResult = Measure([bobBasisSelected ? PauliX | PauliZ], [qubit]);
+                set bobResults += [ResultAsBool(bobResult)];
+                Reset(qubit);
+            }   
         }
         
         Message("***********");
@@ -86,7 +85,7 @@
         mutable bobResultsAfterBasisComparison = new Bool[0];
 
         // compare bases and pick shared results
-        for (i in 0..Length(aliceValues)-1) {
+        for i in 0..Length(aliceValues)-1 {
             // if Alice and Bob used the same basis
             // they can use the corresponding bit
             if (aliceBases[i] == bobBases[i]) {
@@ -101,7 +100,7 @@
         // select a random bit of every 2 bits for eavesdropping check
         mutable eavesdropppingIndices = new Int[0];
         let chunkedValues = Chunks(2, RangeAsIntArray(IndexRange(aliceValuesAfterBasisComparison)));
-        for (i in IndexRange(chunkedValues)) {
+        for i in IndexRange(chunkedValues) {
             if (Length(chunkedValues[i]) == 1) {
                 set eavesdropppingIndices += [chunkedValues[i][0]];
             } else {
@@ -111,7 +110,7 @@
 
         // compare results on eavesdropping check indices
         mutable differences = 0;
-        for (i in eavesdropppingIndices) {
+        for i in eavesdropppingIndices {
             // if Alice and Bob get different result, but used same basis
             // it means that there must have been an eavesdropper (assuming perfect communication)
             if (aliceValuesAfterBasisComparison[i] != bobResultsAfterBasisComparison[i]) {
@@ -158,7 +157,7 @@
     function BoolArrayToString(array : Bool[]) : String {
         mutable stringResult = "";
 
-        for (item in array) {
+        for item in array {
             set stringResult += item ? "1" | "0";
         }
 
