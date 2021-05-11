@@ -39,37 +39,36 @@
         mutable bobResults = new Bool[0];
         mutable bobValues = new Bool[0];
 
-        for (roundtrip in 0..roundtrips-1) {
-            using (qubits = Qubit[chunk]) {
+        for roundtrip in 0..roundtrips-1 {
+            use qubits = Qubit[chunk];
                 
-                // prepare Alice's qubits
-                for (qubit in qubits) {
-                    // Alice chooses random bit
-                    let valueSelected = DrawRandomBool(0.5);
-                    if (valueSelected) { H(qubit); }
-                    set aliceValues += [valueSelected];
-                }
-
-                // eavesdropper!!!
-                for (qubit in qubits) {
-                    let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
-                    if (shouldEavesdrop) {
-                        let eveBasisSelected = DrawRandomBool(0.5);
-                        let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [qubit]);
-                    }
-                }
-
-                // measure Bob's qubits
-                for (qubit in qubits) {
-                    let bobValue = DrawRandomBool(0.5);
-                    set bobValues += [bobValue];
-                    let bobResult = Measure([bobValue ? PauliX | PauliZ], [qubit]);
-                    // |0> or |+>  maps to a classical 0 
-                    // |1> or |->  maps to a classical 1
-                    set bobResults += [ResultAsBool(bobResult)];
-                    Reset(qubit);
-                }   
+            // prepare Alice's qubits
+            for qubit in qubits {
+                // Alice chooses random bit
+                let valueSelected = DrawRandomBool(0.5);
+                if (valueSelected) { H(qubit); }
+                set aliceValues += [valueSelected];
             }
+
+            // eavesdropper!!!
+            for qubit in qubits {
+                let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
+                if (shouldEavesdrop) {
+                    let eveBasisSelected = DrawRandomBool(0.5);
+                    let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [qubit]);
+                }
+            }
+
+            // measure Bob's qubits
+            for qubit in qubits {
+                let bobValue = DrawRandomBool(0.5);
+                set bobValues += [bobValue];
+                let bobResult = Measure([bobValue ? PauliX | PauliZ], [qubit]);
+                // |0> or |+>  maps to a classical 0 
+                // |1> or |->  maps to a classical 1
+                set bobResults += [ResultAsBool(bobResult)];
+                Reset(qubit);
+            }   
         }
         
         Message("");
@@ -78,7 +77,7 @@
         mutable aliceValuesAfterBobResultsCheck = new Bool[0];
         mutable bobValuesAfterBobResultsCheck = new Bool[0];
 
-        for (i in 0..Length(bobResults)-1) {
+        for i in 0..Length(bobResults)-1 {
             if (bobResults[i] == true) {
                 // Alice's valsue is a
                 set aliceValuesAfterBobResultsCheck += [aliceValues[i]];
@@ -92,7 +91,7 @@
         // select a random bit of every 2 bits for eavesdropping check
         mutable eavesdropppingIndices = new Int[0];
         let chunkedValues = Chunks(2, RangeAsIntArray(IndexRange(aliceValuesAfterBobResultsCheck)));
-        for (i in IndexRange(chunkedValues)) {
+        for i in IndexRange(chunkedValues) {
             if (Length(chunkedValues[i]) == 1) {
                 set eavesdropppingIndices += [chunkedValues[i][0]];
             } else {
@@ -102,7 +101,7 @@
 
         // compare results on eavesdropping check indices
         mutable differences = 0;
-        for (i in eavesdropppingIndices) {
+        for i in eavesdropppingIndices {
             // if Alice and Bob get different result, but used same basis
             // it means that there must have been an eavesdropper (assuming perfect communication)
             if (aliceValuesAfterBobResultsCheck[i] != bobValuesAfterBobResultsCheck[i]) {
@@ -149,7 +148,7 @@
     function BoolArrayToString(array : Bool[]) : String {
         mutable stringResult = "";
 
-        for (item in array) {
+        for item in array {
             set stringResult += item ? "1" | "0";
         }
 
