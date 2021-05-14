@@ -35,39 +35,38 @@
         // we should theoretically require 4 * n EPR pairs to produce a key of length n
         // however, since even uniform superposition may give higher deviations at small sample sizes
         // we will use 4 * n + 𝛿, where 𝛿 is 64 to be on the safe side
-        for (i in 0..(4 * expectedKeyLength + 64)) {
-            using ((aliceQubit, bobQubit) = (Qubit(), Qubit())) {
+        for i in 0..(4 * expectedKeyLength + 64) {
+            use (aliceQubit, bobQubit) = (Qubit(), Qubit());
 
-                // create entanglement between aliceQubit and bobQubit
-                H(aliceQubit);
-                CNOT(aliceQubit, bobQubit);
+            // create entanglement between aliceQubit and bobQubit
+            H(aliceQubit);
+            CNOT(aliceQubit, bobQubit);
 
-                // determine if eavesdropper should jump in
-                // if so, let Eve interact with the qubit of Bob
-                let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
-                if (shouldEavesdrop) {
-                    let eveBasisSelected = DrawRandomBool(0.5);
-                    let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [bobQubit]);
-                }
-
-                // Alice and Bob choose a random basis by drawing a random bit
-                // 0 will represent {|0>,|1>} computational (PauliZ) basis
-                // 1 will represent {|->,|+>} Hadamard (PauliX) basis
-                let (aliceBase, aliceResult) = MeasureInRandomBasis(aliceQubit);
-                set aliceBases += [aliceBase == PauliX];
-                set aliceResults += [aliceResult];
-
-                let (bobBase, bobResult) = MeasureInRandomBasis(bobQubit);
-                set bobBases += [bobBase == PauliX];
-                set bobResults += [bobResult];
+            // determine if eavesdropper should jump in
+            // if so, let Eve interact with the qubit of Bob
+            let shouldEavesdrop = DrawRandomBool(eavesdropperProbability);
+            if (shouldEavesdrop) {
+                let eveBasisSelected = DrawRandomBool(0.5);
+                let eveResult = Measure([eveBasisSelected ? PauliX | PauliZ], [bobQubit]);
             }
+
+            // Alice and Bob choose a random basis by drawing a random bit
+            // 0 will represent {|0>,|1>} computational (PauliZ) basis
+            // 1 will represent {|->,|+>} Hadamard (PauliX) basis
+            let (aliceBase, aliceResult) = MeasureInRandomBasis(aliceQubit);
+            set aliceBases += [aliceBase == PauliX];
+            set aliceResults += [aliceResult];
+
+            let (bobBase, bobResult) = MeasureInRandomBasis(bobQubit);
+            set bobBases += [bobBase == PauliX];
+            set bobResults += [bobResult];
         }
 
         mutable aliceResultsAfterBasisComparison = new Bool[0];
         mutable bobResultsAfterBasisComparison = new Bool[0];
 
         // compare bases and pick shared results
-        for (i in 0..Length(aliceResults)-1) {
+        for i in 0..Length(aliceResults)-1 {
             // if Alice and Bob used the same basis
             // they can use the corresponding bit
             if (aliceBases[i] == bobBases[i]) {
@@ -80,7 +79,7 @@
         // select a random bit of every 2 bits for eavesdropping check
         mutable eavesdropppingIndices = new Int[0];
         let chunkedValues = Chunks(2, RangeAsIntArray(IndexRange(aliceResultsAfterBasisComparison)));
-        for (i in IndexRange(chunkedValues)) {
+        for i in IndexRange(chunkedValues) {
             if (Length(chunkedValues[i]) == 1) {
                 set eavesdropppingIndices += [chunkedValues[i][0]];
             } else {
@@ -90,7 +89,7 @@
 
         // compare results on eavesdropping check indices
         mutable differences = 0;
-        for (i in eavesdropppingIndices) {
+        for i in eavesdropppingIndices {
             // if Alice and Bob get different result, but used same basis
             // it means that there must have been an eavesdropper
             if (aliceResultsAfterBasisComparison[i] != bobResultsAfterBasisComparison[i]) {
@@ -139,7 +138,7 @@
     function BoolArrayToString(array : Bool[]) : String {
         mutable stringResult = "";
 
-        for (item in array) {
+        for item in array {
             set stringResult += item ? "1" | "0";
         }
 
