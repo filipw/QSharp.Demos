@@ -21,7 +21,7 @@
         // array holding the totals of results for |00>, |01>, |10>, |11> in {runs}
         mutable results = [0, 0, 0, 0];
 
-        for (i in 0..runs) 
+        for i in 0..runs
         {
             let (r1, r2) = fn();
             if (not r1 and not r2) { set results w/= 0 <- results[0] + 1; }
@@ -45,28 +45,25 @@
     }
 
     operation BellsInequalityAB() : (Bool, Bool) {
-        using ((q1, q2) = (Qubit(), Qubit())) {
-            InitBellState(q1, q2);
-            Rz(PI() / 3.0, q2);
-            return (IsResultOne(MResetX(q1)), IsResultOne(MResetX(q2)));
-        }
+        use (q1, q2) = (Qubit(), Qubit());
+        InitBellState(q1, q2);
+        Rz(PI() / 3.0, q2);
+        return (IsResultOne(MResetX(q1)), IsResultOne(MResetX(q2)));
     }
 
     operation BellsInequalityAC() : (Bool, Bool) {
-        using ((q1, q2) = (Qubit(), Qubit())) {
-            InitBellState(q1, q2);
-            Rz(2.0 * PI() / 3.0, q2);
-            return (IsResultOne(MResetX(q1)), IsResultOne(MResetX(q2)));
-        }
+        use (q1, q2) = (Qubit(), Qubit());
+        InitBellState(q1, q2);
+        Rz(2.0 * PI() / 3.0, q2);
+        return (IsResultOne(MResetX(q1)), IsResultOne(MResetX(q2)));
     }
 
     operation BellsInequalityBC() : (Bool, Bool) {
-        using ((q1, q2) = (Qubit(), Qubit())) {
-            InitBellState(q1, q2);
-            Rz(PI() / 3.0, q1);
-            Rz(2.0 * PI() / 3.0, q2);
-            return (IsResultOne(MResetX(q1)), IsResultOne(MResetX(q2)));
-        }
+        use (q1, q2) = (Qubit(), Qubit());
+        InitBellState(q1, q2);
+        Rz(PI() / 3.0, q1);
+        Rz(2.0 * PI() / 3.0, q2);
+        return (IsResultOne(MResetX(q1)), IsResultOne(MResetX(q2)));
     }
 
     operation InitBellState(q1 : Qubit, q2: Qubit) : Unit is Adj {
