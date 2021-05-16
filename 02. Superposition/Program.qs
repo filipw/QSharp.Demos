@@ -1,5 +1,6 @@
 ﻿namespace SuperposttionExample {
 
+    open Microsoft.Quantum.Arithmetic;
     open Microsoft.Quantum.Bitwise;
     open Microsoft.Quantum.Canon;
     open Microsoft.Quantum.Intrinsic;
@@ -13,7 +14,10 @@
         Message("***********");
 
         let randomBits = RandomNumberGenerator();
-        Message("Generated random uint32: " + IntAsString(BoolArrayAsInt(randomBits)));
+        Message($"Generated random uint16: {BoolArrayAsInt(randomBits)}");
+
+        let randomBits2 = RandomNumberGenerator();
+        Message($"Generated random uint16 v2: {BoolArrayAsInt(randomBits2)}");
     }
 
 
@@ -34,9 +38,9 @@
 
     operation RandomNumberGenerator() : Bool[] {
 
-        mutable randomBits = new Bool[32];
+        mutable randomBits = new Bool[16];
         
-        for idx in 0..31 {
+        for idx in 0..15 {
             use qubit = Qubit();   
             H(qubit);                
             let result = MResetZ(qubit);
@@ -45,4 +49,17 @@
         
         return randomBits;
     }   
+
+    operation RandomNumberGeneratorV2() : Int {
+        use qubits = Qubit[16];
+        ApplyToEach(H, qubits);
+
+        // create a QPU register
+        let register = LittleEndian(qubits);
+
+        // measure the entire register to retrieve the integer
+        let randomNumber = MeasureInteger(register);
+        
+        return randomNumber;
+    }  
 }
